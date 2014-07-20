@@ -82,3 +82,11 @@ func (self *SecureClient) Write() {
 	}
 
 }
+
+func (self *SecureClient) GetName() string {
+	return self.name
+}
+
+func (self *SecureClient) SetName(name string) {
+	self.name = name
+}

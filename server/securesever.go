@@ -16,10 +16,10 @@
 package server
 
 import (
-	//"fmt"
+	"fmt"
 	"log"
 	"net"
-	//"strings"
+	"strings"
 )
 
 type Message chan string
@@ -47,7 +47,7 @@ func (self *SecureServer)serverEvent() {
 	for {
 		select {
 		case message := <-self.incoming:
-			self.messageprocess(message)
+			self.messageProcess(message)
 		case conn := <- self.clientcoming:
 			self.processClient(conn)
 		}
@@ -75,7 +75,7 @@ func (self *SecureServer)sendToEveryClient(message string) {
 	}
 }
 
-func (self *SecureServer)messageprocess(message string) {
+func (self *SecureServer)messageProcess(message string) {
 	
 	self.sendToEveryClient(message)
 }
@@ -90,8 +90,19 @@ func (self *SecureServer)processClient(conn net.Conn) {
 	go func() {
 		for {
 			msg := <-client.incoming
-			log.Printf("Got message: %s\n", msg)
-			self.incoming <- msg
+			
+			if strings.HasPrefix(msg, "::") {
+				cmd := CreateCmd()
+				fmt.Println(cmd)
+				msglist := strings.Split(msg, " ")
+				fmt.Println(msglist)
+				cmd.parseCmd(msglist)
+				cmd.executeCommand(self, client)
+				
+			} else {
+				log.Printf("Got message: %s\n", msg)
+				self.incoming <- msg
+			}
 		}
 	}()
 
