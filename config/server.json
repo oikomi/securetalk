@@ -1,4 +1,4 @@
 {
-    "listen": ":9999",
+    "listen": ":443",
     "logfile": "server.log"
 }

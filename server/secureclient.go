@@ -54,21 +54,37 @@ func (self *SecureClient) ClientEvent() {
 }
 
 func (self *SecureClient) Read() {
+	fmt.Println("Read")
 	for {
+		buf := make([]byte, 1000)
+		n , err := self.reader.Read(buf)
+		if err != nil {
+			fmt.Println("Read error")
+			//log.Printf("Read error: %s\n", err)
+			return			
+		}
+		log.Printf("Read %d bytes\n", n)
+		self.incoming <- string(buf)
+		/*
 		if line, _, err := self.reader.ReadLine(); err == nil {
+			fmt.Println("###########")
 			self.incoming <- string(line)
 		} else {
 			fmt.Println("Read error")
 			//log.Printf("Read error: %s\n", err)
 			return
 		}
+		*/
 	}
 
 }
 
 func (self *SecureClient) Write() {
+	
 	for data := range self.outgoing {
-		 _, err := self.writer.WriteString(data + "\n")
+		fmt.Println("Write")
+		//_, err := self.writer.WriteString(data + "\n")
+		_, err := self.writer.Write([]byte(data))
 		
 		if err != nil {
 			log.Printf("Write error: %s\n", err)

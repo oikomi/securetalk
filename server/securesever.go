@@ -20,6 +20,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"crypto/tls"
 )
 
 type Message chan string
@@ -56,6 +57,33 @@ func (self *SecureServer)serverEvent() {
 
 func (self *SecureServer)Listen(port string) {
 	log.Printf("connport %s \n", port)
+	/////////
+	cer, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+	if err != nil {
+        log.Println(err)
+        return
+    }
+	config := &tls.Config{Certificates: []tls.Certificate{cer}}
+    ln, err := tls.Listen("tcp", port, config) 
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer ln.Close()
+	
+	go self.serverEvent()
+	for {
+		conn, err := ln.Accept()
+		log.Printf("Accept")
+		if err != nil {
+			log.Fatalln(err.Error())
+			return
+		}
+		self.clientcoming <- conn
+	}
+	
+	///////
+	/*
 	self.listener, _ = net.Listen("tcp", port)	
 	go self.serverEvent()
 	for {
@@ -67,6 +95,7 @@ func (self *SecureServer)Listen(port string) {
 		}
 		self.clientcoming <- conn
 	}
+	*/
 }
 
 func (self *SecureServer)sendToEveryClient(message string) {
@@ -76,6 +105,7 @@ func (self *SecureServer)sendToEveryClient(message string) {
 }
 
 func (self *SecureServer)messageProcess(message string) {
+	fmt.Println("messageProcess")
 	
 	self.sendToEveryClient(message)
 }
